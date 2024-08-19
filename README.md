@@ -11,3 +11,14 @@ To build this project run the following command:
 ```bash
 go build cmd/sort/sort.go
 ```
+
+Usage
+-----
+
+Actually there is only one parameter supported `-r` that will reverse the sorting order, this parameter could be in any position.
+Is possible to read a file or from stding:
+
+```bash
+./sort /etc/passwd
+cat /etc/passwd | ./sort
+```
