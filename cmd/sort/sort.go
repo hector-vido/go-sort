@@ -14,6 +14,8 @@ import (
 func main() {
 
   var data []byte;
+  var err error
+
   filePathIdx := slices.IndexFunc(os.Args, functions.AvoidParam("-"))
   if filePathIdx != -1 {
 
@@ -23,7 +25,7 @@ func main() {
     }
 
     fileName := os.Args[filePathIdx]
-    _, err := os.Stat(fileName)
+    _, err = os.Stat(fileName)
     if errors.Is(err, os.ErrNotExist) {
       log.Fatal(err)
     }
@@ -33,6 +35,11 @@ func main() {
     }
     defer f.Close()
     data, err = io.ReadAll(f)
+    if err != nil {
+      log.Fatal(err)
+    }
+  } else {
+    data, err = io.ReadAll(os.Stdin)
     if err != nil {
       log.Fatal(err)
     }
