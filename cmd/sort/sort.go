@@ -13,7 +13,7 @@ import (
 
 func main() {
 
-  var data []byte;
+  var data []byte
   var err error
 
   filePathIdx := slices.IndexFunc(os.Args, functions.AvoidParam("-"))
