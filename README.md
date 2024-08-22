@@ -6,10 +6,19 @@ The purpose of this project is to implement some functionalities of [GNU sort](h
 Build
 -----
 
-To build this project run the following command:
+To build this project you can use the following command:
 
 ```bash
-go build cmd/sort/sort.go
+make build
+```
+
+Test
+----
+
+To execute the unit tests you can use the following command:
+
+```bash
+make test
 ```
 
 Usage
