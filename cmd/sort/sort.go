@@ -2,42 +2,49 @@ package main
 
 import (
   "errors"
+  "flag"
   "fmt"
   "io"
   "log"
   "os"
-  "slices"
 
   "github.com/hector-vido/go-sort/internal/functions"
 )
+
+var orderFlag bool
+
+func init() {
+  flag.BoolVar(&orderFlag, "r", false, "Reverse the sort order")
+}
 
 func main() {
 
   var data []byte
   var err error
+  var f *os.File
+  
+  flag.Parse()
 
-  filePathIdx := slices.IndexFunc(os.Args, functions.AvoidParam("-"))
-  if filePathIdx != -1 {
+  var nArg = flag.NArg()
 
-    invalidParameterIdx := slices.IndexFunc(os.Args[filePathIdx + 1:], functions.AvoidParam("-"))
-    if invalidParameterIdx != -1 {
-      log.Fatal(fmt.Sprintf("Unrecognized argument \"%s\"", os.Args[invalidParameterIdx + filePathIdx + 1]))
-    }
+  if nArg == 1 {
 
-    fileName := os.Args[filePathIdx]
-    _, err = os.Stat(fileName)
-    if errors.Is(err, os.ErrNotExist) {
+    fileName := flag.Arg(0)
+    if _, err = os.Stat(fileName); errors.Is(err, os.ErrNotExist) {
       log.Fatal(err)
     }
-    f, err := os.Open(fileName)
-    if err != nil {
+
+    if f, err = os.Open(fileName); err != nil {
       log.Fatal(err)
     }
     defer f.Close()
-    data, err = io.ReadAll(f)
-    if err != nil {
+
+    if data, err = io.ReadAll(f); err != nil {
       log.Fatal(err)
     }
+
+  } else if nArg > 1 {
+      log.Fatal(fmt.Sprintf("Unrecognized argument \"%s\"", flag.Arg(1)))
   } else {
     data, err = io.ReadAll(os.Stdin)
     if err != nil {
@@ -45,7 +52,7 @@ func main() {
     }
   }
 
-  if slices.IndexFunc(os.Args, functions.FindParam("-r")) != -1 {
+  if orderFlag {
     fmt.Printf("%s\n", functions.SortDesc(data))
   } else {
     fmt.Printf("%s\n", functions.SortAsc(data))
