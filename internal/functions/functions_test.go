@@ -3,57 +3,95 @@ package functions
 import (
   "os"
   "slices"
-  "strings"
   "testing"
 )
 
-// TestAvoidParamFile calls functions.AvoidParam with "-r filename.txt" args
-// and expects do find "filename.txt" in position 2.
-func TestAvoidParamFile(t *testing.T) {
-  os.Args[1] = "-r"
-  os.Args[2] = "filename.txt"
-  filePathIdx := slices.IndexFunc(os.Args, AvoidParam("-"))
-  if filePathIdx == -1 {
-    t.Fatalf(`"sort -r filename.txt" = AvoidParam() looking for "filename.txt" but not found.`)
+// TestParam calls functions.AvoidParam with some args
+// to verify if a filename is present
+func TestAvoidParam(t *testing.T) {
+  testCases := []struct {
+    name, a, b  string
+    expected int
+  } {
+    {
+      name: "Find filename.txt",
+      a: "-r",
+      b: "filename.txt",
+      expected: 2,
+    },
+    {
+      name: "Find nothing",
+      a: "-r",
+      b: "-c",
+      expected: -1,
+    },
+  }
+
+  for _, tc := range testCases {
+    t.Run(tc.name, func(t *testing.T) {
+      os.Args[1] = tc.a
+      os.Args[2] = tc.b
+      result := slices.IndexFunc(os.Args, AvoidParam("-"))
+      if result != tc.expected  {
+        t.Errorf("expecting %d, got %d", tc.expected, result)
+      }
+    })
   }
 }
 
-// TestAvoidParamStdin calls functions.AvoidParam with "-r -c" args
-// and expects to find no files.
-func TestAvoidParamStdin(t *testing.T) {
-  os.Args[1] = "-r"
-  os.Args[2] = "-c"
-  noIdx := slices.IndexFunc(os.Args, AvoidParam("-"))
-  if noIdx != -1 {
-    t.Fatalf(`"sort -r -c" = AvoidParam() should found nothing, but found something.`)
-  }
-}
-
-// TestFindParam calls functons.FindParam with "filename.txt -r" args
-// and expectos to find "-r" in position 2.
+// TestFindParam calls functons.FindParam with some args
+// and expects to find these parameters
 func TestFindParam(t *testing.T) {
-  os.Args[1] = "filename.txt"
-  os.Args[2] = "-r"
-  parameterIdx := slices.IndexFunc(os.Args, FindParam("-r"))
-  if parameterIdx == -1 {
-    t.Fatalf(`"sort filename.txt -r" = FindParam() should found "-r", but found none.`)
+  testCases := []struct {
+    name, a, b  string
+    expected int
+  } {
+    {
+      name: "Find -r",
+      a: "filename.txt",
+      b: "-r",
+      expected: 2,
+    },
+  }
+  for _, tc := range testCases {
+    t.Run(tc.name, func(t *testing.T) {
+      os.Args[1] = tc.a
+      os.Args[2] = tc.b
+      result := slices.IndexFunc(os.Args, FindParam("-r"))
+      if result != tc.expected  {
+        t.Errorf("expecting %d, got %d", tc.expected, result)
+      }
+    })
   }
 }
 
-// TestSortAcs calls functions.SortAsc("d\nc\na\nb") and expects
-// to receive them ordered from a to d.
-func TestSortAsc(t *testing.T) {
-  lines := SortAsc([]byte("d\nc\na\nb"))
-  if lines != "a\nb\nc\nd" {
-    t.Fatalf(`SortAsc("d, c, a, b")" should order as "a, b, c, d" but ordered as "%s"`, strings.ReplaceAll(lines, "\n", ", "))
+// TestSort calls SortAsc("d\nc\na\nb") and SortDesc("d\nc\na\nb")
+// expecting to receive the parameters ordered.
+func TestSort(t *testing.T) {
+  testCases := []struct {
+    name, expected string
+    lines []byte
+    function func(lines []byte) string
+  } {
+    {
+      name: "SortAsc",
+      lines: []byte("d\nc\na\nb"),
+      expected: "a\nb\nc\nd",
+      function: func(lines []byte) string { return SortAsc(lines) },
+    },
+    {
+      name: "SortDesc",
+      lines: []byte("d\nc\na\nb"),
+      expected: "d\nc\nb\na",
+      function: func(lines []byte) string { return SortDesc(lines) },
+    },
   }
-}
-
-// TestSortDesc calls functions.SortAsc("d\nc\na\nb") and expects
-// to receive them ordered from d to a.
-func TestSortDesc(t *testing.T) {
-  lines := SortDesc([]byte("d\nc\na\nb"))
-  if lines != "d\nc\nb\na" {
-    t.Fatalf(`SortDesc("d, c, a, b")" should order as "d, c, b, a" but ordered as "%s"`, strings.ReplaceAll(lines, "\n", ", "))
+  for _, tc := range testCases {
+    t.Run(tc.name, func(t *testing.T) {
+      result := tc.function(tc.lines)
+      if result != tc.expected  {
+        t.Errorf("expecting %s, got %s", tc.expected, result)
+      }
+    })
   }
 }
