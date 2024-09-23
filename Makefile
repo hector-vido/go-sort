@@ -1,6 +1,6 @@
 # Build the sort binary
 build:
-	go build cmd/sort/sort.go
+	go build ./cmd/sort
 
 # Execute unit tests present in internal/functions/
 test:
